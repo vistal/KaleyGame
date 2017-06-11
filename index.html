@@ -1,0 +1,280 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+	<meta charset="UTF-8" />
+	<title>Kaley's Adventure</title>
+    <script src="js/phaser.min.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+function preload() {
+	game.load.image('kaley', 'assets/kaley.png');
+	game.load.image('sky', 'assets/sky.png');
+	game.load.image('moon', 'assets/moon.png');
+	game.load.image('mars', 'assets/mars.png');
+	game.load.image('neptune', 'assets/neptune.png');
+	game.load.image('fruit', 'assets/strawberry.png');
+	game.load.image('ham', 'assets/ham.png');
+	game.load.image('broccoli', 'assets/broccoli.png');
+	game.load.image('jupiter', 'assets/jupiter.png');
+}
+
+var score = 0;
+var scoreText;
+var health = 100;
+var healthText;
+var gameoverText;
+
+function create() {
+	
+	//Enable physics
+	game.physics.startSystem(Phaser.Physics.ARCADE);
+
+        //Background
+        game.add.sprite(0,0, 'sky');
+
+	planets = game.add.group();
+	planets.enableBody = true;
+
+	fruits = game.add.group();
+	fruits.enableBody = true;
+
+	broccolis = game.add.group();
+	broccolis.enableBody = true;
+
+	hams = game.add.group();
+	hams.enableBody = true;	
+	//Moon
+	moon = planets.create(32, game.world.height - 150, 'moon')
+	game.physics.arcade.enable(moon);
+	moon.body.bounce.y = 1;
+        moon.body.bounce.x = 1;
+        moon.body.collideWorldBounds = true;
+	moon.body.velocity.x = 30;
+	moon.body.velocity.y = 30;
+        //Mars
+        mars = planets.create(300, game.world.height - 150, 'mars')
+        game.physics.arcade.enable(mars);
+        mars.body.bounce.y = 1;
+        mars.body.bounce.x = 1;
+        mars.body.collideWorldBounds = true;
+	mars.body.velocity.x = 45;
+	mars.body.velocity.y = -45;
+
+        //Neptune
+        neptune = planets.create(400, game.world.height - 150, 'neptune')
+        game.physics.arcade.enable(neptune);
+        neptune.body.bounce.y = 1;
+        neptune.body.bounce.x = 1;
+        neptune.body.collideWorldBounds = true;
+	neptune.body.velocity.x = -35;
+	neptune.body.velocity.y = 35;
+
+	//Jupiter
+        jupiter = planets.create(400, 150, 'jupiter')
+        game.physics.arcade.enable(jupiter);
+        jupiter.body.bounce.y = 1;
+        jupiter.body.bounce.x = 1;
+        jupiter.body.collideWorldBounds = true;
+        jupiter.body.velocity.x = -25;
+        jupiter.body.velocity.y = 25;
+
+	//Player
+	player = game.add.sprite(32, game.world.height - 150, 'kaley');
+	game.physics.arcade.enable(player);
+	player.body.bounce.y = 1;
+	player.body.bounce.x = 1;
+	player.body.collideWorldBounds = true;
+
+	game.time.events.repeat(Phaser.Timer.SECOND * 3, 1000, createFruit, this);
+	game.time.events.repeat(Phaser.Timer.SECOND * 10, 1000, createBroccoli, this);
+	game.time.events.repeat(Phaser.Timer.SECOND * 5, 1000, createHam, this);
+        scoreText = game.add.text(16, 16, 'Score: 0', {fontSize: '32px', fill: '#FFF' });
+	healthText = game.add.text(600,16, 'Health: 100', {fontSize: '32px', fill: '#FFF' });
+}
+
+function createFruit() {
+
+var fruit = fruits.create(game.world.randomX, game.world.randomY, 'fruit');
+fruit.body.bounce.y = 1;
+fruit.body.bounce.x = 1;
+fruit.body.collideWorldBounds = true;
+fruit.body.velocity.y = -100 + Math.random() * 200;
+fruit.body.velocity.x = -100 + Math.random() * 200;
+}
+
+function createBroccoli() {
+
+var broccoli = broccolis.create(game.world.randomX, game.world.randomY, 'broccoli');
+broccoli.body.bounce.y = 1;
+broccoli.body.bounce.x = 1;
+broccoli.body.collideWorldBounds = true;
+broccoli.body.velocity.y = -100 + Math.random() * 200;
+broccoli.body.velocity.x = -100 + Math.random() * 200;
+}
+
+function createHam() {
+
+var ham = hams.create(game.world.randomX, game.world.randomY, 'ham');
+ham.body.bounce.y = 1;
+ham.body.bounce.x = 1;
+ham.body.collideWorldBounds = true;
+ham.body.velocity.y = -200 + Math.random() * 400;
+ham.body.velocity.x = -200 + Math.random() * 400;
+
+}
+function collectFruit(player, fruit) {
+fruit.kill();
+score += 25;
+scoreText.text = 'Score: ' + score;
+}
+
+function collectBroccoli(player, broccoli) {
+broccoli.kill();
+score += 100;
+scoreText.text = 'Score: ' + score;
+}
+
+function collectHam(player, ham) {
+ham.kill();
+health -=10;
+healthText.text = 'Health: ' + health;
+}
+function update() {
+
+//CollectFruit
+game.physics.arcade.overlap(player, fruits, collectFruit, null, this);
+
+//CollectHam
+game.physics.arcade.overlap(player, hams, collectHam, null, this);
+
+//CollectBroccoli
+game.physics.arcade.overlap(player, broccolis, collectBroccoli, null, this);
+
+//Controls
+        cursors = game.input.keyboard.createCursorKeys();
+//        player.body.velocity.x = 0.5;
+//        player.body.velocity.y = 0.5;
+	if (cursors.left.isDown && cursors.down.isDown)
+	{
+		if (player.body.velocity.x > -300)
+		{
+		player.body.velocity.x = player.body.velocity.x - 25;
+		}
+		if (player.body.velocity.y < 300)
+		{
+		player.body.velocity.y = player.body.velocity.y + 25;
+		}
+	}
+	else if (cursors.left.isDown && cursors.up.isDown)
+	{
+		if (player.body.velocity.x > -300)
+		{
+		player.body.velocity.x = player.body.velocity.x - 25;
+		}
+
+		if (player.body.velocity.y > -300)
+		{
+		player.body.velocity.y = player.body.velocity.y - 25;
+		}
+	}
+	else if (cursors.right.isDown && cursors.up.isDown)
+	{
+		if (player.body.velocity.x < 300)
+		{
+		player.body.velocity.x = player.body.velocity.x + 25;
+		}
+		if (player.body.velocity.y > -300)
+		{
+		player.body.velocity.y = player.body.velocity.y - 25;
+		}
+	}
+	else if (cursors.right.isDown && cursors.down.isDown)
+	{
+		if (player.body.velocity.x < 300)
+		{
+		player.body.velocity.x = player.body.velocity.x + 25;
+		}
+		if (player.body.velocity.y < 300)
+		{
+		player.body.velocity.y = player.body.velocity.y + 25;
+		}
+	}
+        else if (cursors.left.isDown)
+        {
+		if (player.body.velocity.x > -300)
+		{
+                player.body.velocity.x = player.body.velocity.x - 25;
+	//	player.body.velocity.y = 0;
+		}
+        }
+        else if (cursors.right.isDown)
+        {
+		if (player.body.velocity.x < 300)
+		{
+                player.body.velocity.x = player.body.velocity.x + 25;
+	//	player.body.velocity.y = 0;
+		}
+        }
+        else if (cursors.up.isDown)
+        {
+		if (player.body.velocity.y > -300)
+		{
+                player.body.velocity.y = player.body.velocity.y - 25;
+	//	player.body.velocity.x = 0;
+		}
+        }
+        else if (cursors.down.isDown)
+        {
+		if (player.body.velocity.y < 300)
+		{
+                player.body.velocity.y = player.body.velocity.y + 25;
+	//	player.body.velocity.x = 0;
+		}
+        }
+	//Moon collision
+	game.physics.arcade.collide(player, moon);
+	game.physics.arcade.collide(player, mars);
+	game.physics.arcade.collide(player, neptune);
+	game.physics.arcade.collide(moon,mars);
+	game.physics.arcade.collide(moon,neptune);
+	game.physics.arcade.collide(mars, neptune);
+	game.physics.arcade.collide(moon, hams);
+	game.physics.arcade.collide(moon, broccolis);
+	game.physics.arcade.collide(moon, fruits);
+	game.physics.arcade.collide(mars, hams);
+	game.physics.arcade.collide(mars, fruits);
+	game.physics.arcade.collide(mars, broccolis);
+	game.physics.arcade.collide(neptune, hams);
+	game.physics.arcade.collide(neptune, fruits);
+	game.physics.arcade.collide(neptune, broccolis);
+	game.physics.arcade.collide(fruits, hams);
+	game.physics.arcade.collide(fruits, broccolis);
+	game.physics.arcade.collide(hams, broccolis);
+	game.physics.arcade.collide(player, jupiter);
+	game.physics.arcade.collide(jupiter, moon);
+	game.physics.arcade.collide(jupiter, neptune);
+	game.physics.arcade.collide(jupiter, mars);
+	game.physics.arcade.collide(jupiter, hams);
+	game.physics.arcade.collide(jupiter, fruits);
+	game.physics.arcade.collide(jupiter, broccolis);
+	if (health <= 0)
+	{
+	player.kill();
+	gameoverText = game.add.text(300, 300, 'Game Over!', {fontSize: '32px', fill: '#FF0000' });
+	}
+}
+
+</script>
+
+</body>
+</html>
